@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from services.market_data import get_company_profile, get_daily_prices, save_to_cache
 from services.sec_edgar import get_sec_filings
 from services.ai_summary import generate_ai_brief
+from services.news import get_company_news # Added news import
 import json
 
 # --- CONFIGURATION ---
@@ -67,6 +68,17 @@ def refresh_all_data():
                 print(f"  - Failed to fetch SEC filings for {ticker}.")
         except Exception as e:
             print(f"  - An error occurred while fetching SEC filings for {ticker}: {e}")
+
+        # --- Refresh Company News --- # Added news fetching
+        try:
+            news = get_company_news(ticker)
+            if news:
+                save_to_cache(f"{ticker}_news.json", news)
+                print(f"  - Company news for {ticker} saved.")
+            else:
+                print(f"  - Failed to fetch company news for {ticker}.")
+        except Exception as e:
+            print(f"  - An error occurred while fetching company news for {ticker}: {e}")
 
         # Respect API rate limits
         print("--- Waiting to avoid hitting API rate limits ---")
