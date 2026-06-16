@@ -60,7 +60,34 @@ def save_to_cache(filename, data):
 def get_company_profile(ticker):
     """
     Fetches a company profile, trying Finnhub first and FMP as a fallback.
+    Includes static data for ETFs (SPY, QQQ).
     """
+    # Static data for ETFs
+    if ticker == "SPY":
+        return {
+            "ticker": "SPY",
+            "name": "SPDR S&P 500 ETF Trust",
+            "exchange": "NYSE Arca",
+            "sector": "ETF",
+            "industry": "Exchange Traded Fund",
+            "market_cap": None, # Can be dynamically fetched or left as None
+            "description": "The SPDR S&P 500 ETF Trust is an exchange-traded fund which seeks to provide investment results that, before expenses, correspond generally to the price and yield performance of the S&P 500 Index.",
+            "website": "https://www.ssga.com/us/en/individual/etfs/funds/spdr-sp-500-etf-trust-spy",
+            "logo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/SPDR_S%26P_500_ETF_logo.svg/1200px-SPDR_S%26P_500_ETF_logo.svg.png"
+        }
+    elif ticker == "QQQ":
+        return {
+            "ticker": "QQQ",
+            "name": "Invesco QQQ Trust",
+            "exchange": "NASDAQ",
+            "sector": "ETF",
+            "industry": "Exchange Traded Fund",
+            "market_cap": None, # Can be dynamically fetched or left as None
+            "description": "The Invesco QQQ Trust is an exchange-traded fund that consists of the 100 largest non-financial companies listed on the Nasdaq stock market.",
+            "website": "https://www.invesco.com/us/financial-products/etfs/product-detail?audienceType=Investor&ticker=QQQ",
+            "logo_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Invesco_QQQ_logo.svg/1200px-Invesco_QQQ_logo.svg.png"
+        }
+
     # Try Finnhub first
     profile_data = get_from_finnhub("stock/profile2", {'symbol': ticker})
     if profile_data:
@@ -98,7 +125,7 @@ def get_company_profile(ticker):
 
 def get_daily_prices(ticker, days=365):
     """
-    Fetches daily price history for a ticker, trying Finnhub first and FMP as a fallback.
+    Fetches daily price history for a ticker, trying Finnhub, then FMP, and finally yfinance as a fallback.
     """
     # --- Finnhub Attempt ---
     end_date = datetime.now()
@@ -143,6 +170,26 @@ def get_daily_prices(ticker, days=365):
                 "volume": item.get('volume')
             })
         return {"ticker": ticker, "history": history}
+
+    # --- yfinance Fallback ---
+    try:
+        import yfinance as yf
+        yf_ticker = yf.Ticker(ticker)
+        yf_data = yf_ticker.history(period=f"{days}d")
+        if not yf_data.empty:
+            history = []
+            for index, row in yf_data.iterrows():
+                history.append({
+                    "date": index.strftime('%Y-%m-%d'),
+                    "open": row['Open'],
+                    "high": row['High'],
+                    "low": row['Low'],
+                    "close": row['Close'],
+                    "volume": row['Volume']
+                })
+            return {"ticker": ticker, "history": history}
+    except Exception as e:
+        print(f"Error fetching from yfinance for {ticker}: {e}")
 
     return None
 
