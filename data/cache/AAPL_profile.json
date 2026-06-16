@@ -1,0 +1,9 @@
+{
+  "ticker": "AAPL",
+  "name": "Apple Inc",
+  "exchange": "NASDAQ NMS - GLOBAL MARKET",
+  "sector": "Technology",
+  "market_cap": 4353626.27053781,
+  "website": "https://www.apple.com/",
+  "logo_url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/AAPL.png"
+}
